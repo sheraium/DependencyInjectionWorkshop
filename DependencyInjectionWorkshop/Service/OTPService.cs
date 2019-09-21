@@ -9,10 +9,10 @@ namespace DependencyInjectionWorkshop.Service
         {
         }
 
-        public string GetCurrentOtp(string accountId, HttpClient httpClient)
+        public string GetCurrentOtp(string accountId)
         {
             var currentOtp = string.Empty;
-            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
+            var response = new HttpClient() { BaseAddress = new Uri("http://joey.com/") }.PostAsJsonAsync("api/otps", accountId).Result;
             if (response.IsSuccessStatusCode)
             {
                 currentOtp = response.Content.ReadAsAsync<string>().Result;

@@ -22,9 +22,7 @@ namespace DependencyInjectionWorkshop.Models
 
         public bool Verifty(string accountId, string password, string otp)
         {
-            var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
-
-            var isLocked = GetAccountIsLocked(accountId, httpClient);
+            var isLocked = GetAccountIsLocked(accountId, new HttpClient() { BaseAddress = new Uri("http://joey.com/") });
             if (isLocked)
             {
                 throw new FailedTooManyTimesException();
@@ -34,19 +32,19 @@ namespace DependencyInjectionWorkshop.Models
 
             var hashedPassword = _sha256Adapter.GetHashedPassword(password);
 
-            var currentOtp = _otpService.GetCurrentOtp(accountId, httpClient);
+            var currentOtp = _otpService.GetCurrentOtp(accountId);
 
             if (hashedPassword == passwordFromDB && otp == currentOtp)
             {
-                ResetFailedCount(accountId, httpClient);
+                ResetFailedCount(accountId, new HttpClient() { BaseAddress = new Uri("http://joey.com/") });
 
                 return true;
             }
             else
             {
-                AddFailedCount(accountId, httpClient);
+                AddFailedCount(accountId, new HttpClient() { BaseAddress = new Uri("http://joey.com/") });
 
-                LogFailedCount(accountId, httpClient);
+                LogFailedCount(accountId, new HttpClient() { BaseAddress = new Uri("http://joey.com/") });
 
                 _slackAdapter.Notify(accountId);
 
