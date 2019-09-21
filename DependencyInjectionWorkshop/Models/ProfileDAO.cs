@@ -1,13 +1,18 @@
-﻿using System.Data;
+﻿using Dapper;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using Dapper;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class ProfileDAO
+    public interface IProfile
     {
-        public string GetPasswordFromDb(string accountId)
+        string GetPassword(string accountId);
+    }
+
+    public class ProfileDAO : IProfile
+    {
+        public string GetPassword(string accountId)
         {
             var passwordFromDB = string.Empty;
             using (var connection = new SqlConnection("my connection string"))
