@@ -1,0 +1,28 @@
+﻿using System;
+using System.Net.Http;
+
+namespace DependencyInjectionWorkshop.Service
+{
+    public class OTPService
+    {
+        public OTPService()
+        {
+        }
+
+        public string GetCurrentOtp(string accountId, HttpClient httpClient)
+        {
+            var currentOtp = string.Empty;
+            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                currentOtp = response.Content.ReadAsAsync<string>().Result;
+            }
+            else
+            {
+                throw new Exception($"web api error, accountId:{accountId}");
+            }
+
+            return currentOtp;
+        }
+    }
+}

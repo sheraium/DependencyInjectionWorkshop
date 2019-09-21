@@ -1,16 +1,25 @@
-﻿using Dapper;
-using SlackAPI;
-using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
+﻿using System;
 using System.Net.Http;
-using System.Text;
+using DependencyInjectionWorkshop.Adapter;
+using DependencyInjectionWorkshop.Service;
 
 namespace DependencyInjectionWorkshop.Models
 {
     public class AuthenticationService
     {
+        private readonly ProfileDAO _profileDao;
+        private readonly Sha256Adapter _sha256Adapter;
+        private readonly OTPService _otpService;
+        private readonly SlackAdapter _slackAdapter;
+
+        public AuthenticationService()
+        {
+            _profileDao = new ProfileDAO();
+            _sha256Adapter = new Sha256Adapter();
+            _otpService = new OTPService();
+            _slackAdapter = new SlackAdapter();
+        }
+
         public bool Verifty(string accountId, string password, string otp)
         {
             var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
@@ -21,11 +30,11 @@ namespace DependencyInjectionWorkshop.Models
                 throw new FailedTooManyTimesException();
             }
 
-            var passwordFromDB = GetPasswordFromDb(accountId);
+            var passwordFromDB = _profileDao.GetPasswordFromDb(accountId);
 
-            var hashedPassword = GetHashedPassword(password);
+            var hashedPassword = _sha256Adapter.GetHashedPassword(password);
 
-            var currentOtp = GetCurrentOtp(accountId, httpClient);
+            var currentOtp = _otpService.GetCurrentOtp(accountId, httpClient);
 
             if (hashedPassword == passwordFromDB && otp == currentOtp)
             {
@@ -39,20 +48,13 @@ namespace DependencyInjectionWorkshop.Models
 
                 LogFailedCount(accountId, httpClient);
 
-                Notify(accountId);
+                _slackAdapter.Notify(accountId);
 
                 return false;
             }
         }
 
-        private static void Notify(string accountId)
-        {
-            string message = $"{accountId}Try to login failed";
-            var slackClient = new SlackClient("my api token");
-            slackClient.PostMessage(response1 => { }, "my channel", message, "my bot name");
-        }
-
-        private static void LogFailedCount(string accountId, HttpClient httpClient)
+        private void LogFailedCount(string accountId, HttpClient httpClient)
         {
             var failedCountResponse =
                 httpClient.PostAsJsonAsync("api/failedCounter/GetFailedCount", accountId).Result;
@@ -79,48 +81,6 @@ namespace DependencyInjectionWorkshop.Models
         {
             var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
             resetResponse.EnsureSuccessStatusCode();
-        }
-
-        private static string GetCurrentOtp(string accountId, HttpClient httpClient)
-        {
-            var currentOtp = string.Empty;
-            var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
-            if (response.IsSuccessStatusCode)
-            {
-                currentOtp = response.Content.ReadAsAsync<string>().Result;
-            }
-            else
-            {
-                throw new Exception($"web api error, accountId:{accountId}");
-            }
-
-            return currentOtp;
-        }
-
-        private static string GetHashedPassword(string password)
-        {
-            var crypt = new System.Security.Cryptography.SHA256Managed();
-            var hash = new StringBuilder();
-            var crypto = crypt.ComputeHash(Encoding.UTF8.GetBytes(password));
-            foreach (var theByte in crypto)
-            {
-                hash.Append(theByte.ToString("x2"));
-            }
-
-            var hashedPassword = hash.ToString();
-            return hashedPassword;
-        }
-
-        private static string GetPasswordFromDb(string accountId)
-        {
-            var passwordFromDB = string.Empty;
-            using (var connection = new SqlConnection("my connection string"))
-            {
-                passwordFromDB = connection.Query<string>("spGetUserPassword", new { Id = accountId },
-                    commandType: CommandType.StoredProcedure).SingleOrDefault();
-            }
-
-            return passwordFromDB;
         }
 
         private static bool GetAccountIsLocked(string accountId, HttpClient httpClient)
