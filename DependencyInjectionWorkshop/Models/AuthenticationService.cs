@@ -9,27 +9,27 @@ namespace DependencyInjectionWorkshop.Models
         private readonly IOTPService _otpService;
         private readonly IProfile _profile;
         private readonly IHash _hash;
-        private readonly INotification _slackAdapter;
-        private readonly ILogger _nLogAdapter;
+        private readonly INotification _notification;
+        private readonly ILogger _logger;
 
         public AuthenticationService()
         {
             _profile = new ProfileDAO();
             _hash = new Sha256Adapter();
             _otpService = new OTPService();
-            _slackAdapter = new SlackAdapter();
+            _notification = new SlackAdapter();
             _failedCounter = new FailedCounter();
-            _nLogAdapter = new NLogAdapter();
+            _logger = new NLogAdapter();
         }
 
-        public AuthenticationService(IFailedCounter failedCounter, IOTPService otpService, IProfile profile, IHash hash, INotification slackAdapter, ILogger nLogAdapter)
+        public AuthenticationService(IFailedCounter failedCounter, IOTPService otpService, IProfile profile, IHash hash, INotification notification, ILogger logger)
         {
             _failedCounter = failedCounter;
             _otpService = otpService;
             _profile = profile;
             _hash = hash;
-            _slackAdapter = slackAdapter;
-            _nLogAdapter = nLogAdapter;
+            _notification = notification;
+            _logger = logger;
         }
 
         public bool Verifty(string accountId, string password, string otp)
@@ -57,9 +57,9 @@ namespace DependencyInjectionWorkshop.Models
                 _failedCounter.AddFailedCount(accountId);
 
                 var failedCount = _failedCounter.GetFailedCount(accountId);
-                _nLogAdapter.Info($"accountId:{accountId} failed times:{failedCount}");
+                _logger.Info($"accountId:{accountId} failed times:{failedCount}");
 
-                _slackAdapter.Send(accountId);
+                _notification.Send(accountId);
 
                 return false;
             }
