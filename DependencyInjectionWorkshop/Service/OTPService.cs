@@ -3,7 +3,12 @@ using System.Net.Http;
 
 namespace DependencyInjectionWorkshop.Service
 {
-    public class OTPService
+    public interface IOTPService
+    {
+        string GetCurrentOtp(string accountId);
+    }
+
+    public class OTPService : IOTPService
     {
         public OTPService()
         {
