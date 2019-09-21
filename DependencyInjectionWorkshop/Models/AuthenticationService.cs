@@ -13,6 +13,17 @@ namespace DependencyInjectionWorkshop.Models
     {
         public bool Verifty(string accountId, string password, string otp)
         {
+            var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
+
+            var isLockedResponse = httpClient.PostAsJsonAsync("api/failedCounter/IsLocked", accountId).Result;
+
+            isLockedResponse.EnsureSuccessStatusCode();
+            if (isLockedResponse.Content.ReadAsAsync<bool>().Result)
+            {
+                throw new FailedTooManyTimesException();
+            }
+
+
             var passwordFromDB = string.Empty;
             using (var connection = new SqlConnection("my connection string"))
             {
@@ -30,7 +41,6 @@ namespace DependencyInjectionWorkshop.Models
             var hashedPassword = hash.ToString();
 
             var currentOtp = string.Empty;
-            var httpClient = new HttpClient() { BaseAddress = new Uri("http://joey.com/") };
             var response = httpClient.PostAsJsonAsync("api/otps", accountId).Result;
             if (response.IsSuccessStatusCode)
             {
@@ -43,6 +53,8 @@ namespace DependencyInjectionWorkshop.Models
 
             if (password == passwordFromDB && otp == currentOtp)
             {
+
+               
                 var resetResponse = httpClient.PostAsJsonAsync("api/failedCounter/Reset", accountId).Result;
                 resetResponse.EnsureSuccessStatusCode();
 
