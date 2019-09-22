@@ -20,7 +20,7 @@ namespace DependencyInjectionWorkshopTests
         private IHash _hash;
         private ILogger _logger;
         private INotification _notification;
-        private IOTPService _otpService;
+        private IOtpService _otpService;
         private IProfile _profile;
 
         [Test]
@@ -85,7 +85,7 @@ namespace DependencyInjectionWorkshopTests
         public void SetUp()
         {
             _failedCounter = Substitute.For<IFailedCounter>();
-            _otpService = Substitute.For<IOTPService>();
+            _otpService = Substitute.For<IOtpService>();
             _profile = Substitute.For<IProfile>();
             _hash = Substitute.For<IHash>();
             _notification = Substitute.For<INotification>();
