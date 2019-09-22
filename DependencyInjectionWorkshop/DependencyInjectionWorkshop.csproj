@@ -78,9 +78,12 @@
     <Compile Include="Adapter\NLogAdapter.cs" />
     <Compile Include="Adapter\Sha256Adapter.cs" />
     <Compile Include="Adapter\SlackAdapter.cs" />
+    <Compile Include="Models\AuthenticationDecoratorBase.cs" />
     <Compile Include="Models\AuthenticationService.cs" />
     <Compile Include="Models\FailedCounter.cs" />
+    <Compile Include="Models\FailedCounterDecorator.cs" />
     <Compile Include="Models\FailedTooManyTimesException.cs" />
+    <Compile Include="Models\LogFailedCountDecorator.cs" />
     <Compile Include="Models\NotificationDecorator.cs" />
     <Compile Include="Models\ProfileDAO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
