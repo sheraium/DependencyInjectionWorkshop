@@ -15,7 +15,7 @@ namespace DependencyInjectionWorkshopTests
         private const string DefaultInputPassword = "abc";
         private const string DefaultOtp = "123456";
         private const int DefaultFailedCount = 88;
-        private AuthenticationService _authenticationService;
+        private IAuthentication _authentication;
         private IFailedCounter _failedCounter;
         private IHash _hash;
         private ILogger _logger;
@@ -116,8 +116,9 @@ namespace DependencyInjectionWorkshopTests
             _hash = Substitute.For<IHash>();
             _notification = Substitute.For<INotification>();
             _logger = Substitute.For<ILogger>();
-            _authenticationService =
+            _authentication =
                 new AuthenticationService(_failedCounter, _otpService, _profile, _hash, _notification, _logger);
+            _authentication = new NotificationDecorator(_authentication, _notification);
         }
 
         private static void ShouldBeInvalid(bool isValid)
@@ -172,7 +173,7 @@ namespace DependencyInjectionWorkshopTests
 
         private bool WhenVerify(string defaultAccountId, string defaultInputPassword, string defaultOtp)
         {
-            return _authenticationService.Verifty(defaultAccountId, defaultInputPassword, defaultOtp);
+            return _authentication.Verifty(defaultAccountId, defaultInputPassword, defaultOtp);
         }
     }
 }

@@ -3,13 +3,17 @@ using DependencyInjectionWorkshop.Service;
 
 namespace DependencyInjectionWorkshop.Models
 {
-    public class AuthenticationService
+    public interface IAuthentication
+    {
+        bool Verifty(string accountId, string password, string otp);
+    }
+
+    public class AuthenticationService : IAuthentication
     {
         private readonly IFailedCounter _failedCounter;
         private readonly IOTPService _otpService;
         private readonly IProfile _profile;
         private readonly IHash _hash;
-        private readonly INotification _notification;
         private readonly ILogger _logger;
 
         public AuthenticationService()
@@ -17,7 +21,6 @@ namespace DependencyInjectionWorkshop.Models
             _profile = new ProfileDAO();
             _hash = new Sha256Adapter();
             _otpService = new OTPService();
-            _notification = new SlackAdapter();
             _failedCounter = new FailedCounter();
             _logger = new NLogAdapter();
         }
@@ -28,7 +31,6 @@ namespace DependencyInjectionWorkshop.Models
             _otpService = otpService;
             _profile = profile;
             _hash = hash;
-            _notification = notification;
             _logger = logger;
         }
 
@@ -58,8 +60,6 @@ namespace DependencyInjectionWorkshop.Models
 
                 var failedCount = _failedCounter.GetFailedCount(accountId);
                 _logger.Info($"accountId:{accountId} failed times:{failedCount}");
-
-                _notification.Send(accountId);
 
                 return false;
             }
