@@ -36,7 +36,8 @@ namespace DependencyInjectionWorkshop.Models
 
             var currentOtp = _otpService.GetCurrentOtp(accountId);
 
-            return hashedPassword == passwordFromDB && otp == currentOtp;
+            var isValid = hashedPassword == passwordFromDB && otp == currentOtp;
+            return isValid;
         }
     }
 }
