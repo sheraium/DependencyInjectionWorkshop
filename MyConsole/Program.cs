@@ -3,6 +3,7 @@ using DependencyInjectionWorkshop.Adapter;
 using DependencyInjectionWorkshop.Models;
 using DependencyInjectionWorkshop.Service;
 using System;
+using Autofac.Extras.DynamicProxy;
 
 namespace MyConsole
 {
@@ -20,6 +21,12 @@ namespace MyConsole
         private static void Main(string[] args)
         {
             RegisterContains();
+
+            Console.WriteLine("who are you?");
+            var name = Console.ReadLine();
+            var context = _container.Resolve<IContext>();
+            context.SetCurrentUser(new Account() { Name = name });
+
             //_notification = new FakeSlack();
             //_logger = new FakeLogger();
             //_failedCounter = new FakeFailedCounter();
@@ -48,14 +55,33 @@ namespace MyConsole
             builder.RegisterType<FakeLogger>().As<ILogger>();
             builder.RegisterType<FakeSlack>().As<INotification>();
             builder.RegisterType<FakeFailedCounter>().As<IFailedCounter>();
-            builder.RegisterType<AuthenticationService>().As<IAuthentication>();
+            builder.RegisterType<AuthenticationService>().As<IAuthentication>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuditLogInterceptor));
 
+            builder.RegisterType<AuditLogInterceptor>();
+            builder.RegisterType<MyContext>().As<IContext>().SingleInstance();
             builder.RegisterDecorator<NotificationDecorator, IAuthentication>();
             builder.RegisterDecorator<FailedCounterDecorator, IAuthentication>();
             builder.RegisterDecorator<LogFailedCountDecorator, IAuthentication>();
             builder.RegisterDecorator<LogMethodInfoDecorator, IAuthentication>();
 
             _container = builder.Build();
+        }
+    }
+
+    public class MyContext:IContext
+    {
+        private Account _account;
+
+        public Account GetCurrentUser()
+        {
+            return _account;
+        }
+
+        public void SetCurrentUser(Account account)
+        {
+            _account = account;
         }
     }
 
