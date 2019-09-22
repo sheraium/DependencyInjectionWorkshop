@@ -5,7 +5,7 @@ namespace DependencyInjectionWorkshop.Models
 {
     public interface IAuthentication
     {
-        bool Verifty(string accountId, string password, string otp);
+        bool Verify(string accountId, string password, string otp);
     }
 
     public class AuthenticationService : IAuthentication
@@ -34,7 +34,7 @@ namespace DependencyInjectionWorkshop.Models
             _logger = logger;
         }
 
-        public bool Verifty(string accountId, string password, string otp)
+        public bool Verify(string accountId, string password, string otp)
         {
             var isLocked = _failedCounter.GetAccountIsLocked(accountId);
             if (isLocked)

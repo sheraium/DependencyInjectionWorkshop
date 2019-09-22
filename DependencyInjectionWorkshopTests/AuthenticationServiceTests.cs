@@ -173,7 +173,7 @@ namespace DependencyInjectionWorkshopTests
 
         private bool WhenVerify(string defaultAccountId, string defaultInputPassword, string defaultOtp)
         {
-            return _authentication.Verifty(defaultAccountId, defaultInputPassword, defaultOtp);
+            return _authentication.Verify(defaultAccountId, defaultInputPassword, defaultOtp);
         }
     }
 }

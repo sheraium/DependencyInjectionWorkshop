@@ -18,9 +18,9 @@ namespace DependencyInjectionWorkshop.Models
             _notification.Send(accountId);
         }
 
-        public bool Verifty(string accountId, string password, string otp)
+        public bool Verify(string accountId, string password, string otp)
         {
-            var isVerify = _authentication.Verifty(accountId, password, otp);
+            var isVerify = _authentication.Verify(accountId, password, otp);
             if (!isVerify)
             {
                 Send(accountId);
